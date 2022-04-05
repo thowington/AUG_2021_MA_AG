@@ -1268,6 +1268,7 @@ write_csv(zips4,filename)
 
 
 
+
 # ---- summaries by top 20 ----
 maj_min=zips4 %>%
   filter(pct_nonwhite>.5,
