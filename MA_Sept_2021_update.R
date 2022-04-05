@@ -714,16 +714,6 @@ muni_cs = muni_cs_neighborhoods %>%
   filter(!municipality %in% light_plant_municipalities) 
 
 
-#  fill in gaps in kwh from calculations above
-# muni_cs[which(is.na(muni_cs$kwh) == T &
-#                 muni_cs$income == "low"),]$kwh <-
-#   muni_cs[which(is.na(muni_cs$kwh) == T &
-#                   muni_cs$income == "low"),]$no_accts*FIT_low_avg_kwh_Sept20
-# 
-# muni_cs[which(is.na(muni_cs$kwh) == T &
-#                 muni_cs$income == "all"),]$kwh <-
-#   muni_cs[which(is.na(muni_cs$kwh) == T &
-#                   muni_cs$income == "all"),]$no_accts*FIT_all_avg_kwh_Sept20
 
 muni_cs_2=muni_cs %>% 
   mutate(amt_billed=kwh*rate) %>% 
@@ -776,7 +766,7 @@ muni=muni %>%
          pct_low_accts=low_tot_accts/all_tot_accts) %>% 
   left_join(suppliers_present)
 
-# added 1/7 to get non-low-income components
+
 muni = muni %>%
   mutate(nonlow_tot_accts = all_tot_accts -low_tot_accts,
          nonlow_no_basic_accts = all_no_basic_accts - low_no_basic_accts,
@@ -835,30 +825,6 @@ write_csv(muni_small,filename)
 
 
 
-# const <- monthly_cs %>% filter(supplier %like% "CONST")
-# const_low <- const %>% filter(income == "low") %>% group_by(date) %>% summarise(tot_accts = sum(no_accts))
-# filename = paste0("../sept_2021_update/output/const_low_",today,".txt")
-# write.csv(const_low, filename, row.names = FALSE)
-
-# check for aggregator in competitive supplier lists
-# wma_q4_agg <- read_excel("Eversource2021_WMA_q4_agg.xlsx")
-# wma_q4_aggregators <- unique(wma_q4_agg$aggregator)
-# 
-# wma_q5_agg <- read_excel("Eversource2021_WMA_q5_agg.xlsx")
-# wma_q5_aggregators <- unique(wma_q5_agg$aggregator)
-
-# wma_q4_cs <- read_excel("Eversource2021_WMA_q4_cs.xlsx")
-# wma_q4_cs_check_supplier <- wma_q4_cs %>% filter(supplier %in% wma_q4_aggregators)
-# wma_q4_cs_check_supplier_unique <- unique(wma_q4_cs_check_supplier[,c("municipality","supplier")])
-# write.csv(wma_q4_cs_check_supplier_unique,"../output/wma_q4_cs_check_supplier.csv", 
-#                           row.names = FALSE, quote = FALSE)
-# 
-# wma_q5_cs <- read_excel("Eversource2021_WMA_q5_cs.xlsx")
-# wma_q5_cs_check_supplier <- wma_q5_cs %>% filter(supplier %in% wma_q5_aggregators)
-# wma_q5_cs_check_supplier_unique <- unique(wma_q5_cs_check_supplier[,c("municipality","supplier")])
-# write.csv(wma_q5_cs_check_supplier_unique,"../output/wma_q5_cs_check_supplier.csv", 
-#                           row.names = FALSE, quote = FALSE)
-
 
 # top 10 cities by overall consumer loss, all incomes ----
 max_total_loss_all_inc <- muni_small %>% slice_max(all_cs_loss_over_basic, n=10) %>% 
@@ -887,24 +853,6 @@ max_loss_per_hh_low_inc <- muni_small %>% slice_max(low_loss_per_cs_hh, n=10) %>
 filename = paste0("../sept_2021_update/output/max_loss_per_hh_low_inc",today,".csv")
 write_csv(max_loss_per_hh_low_inc,filename)
 
-# which competitive suppliers save consumers the most money?
-# in monthly_cs_welfare, bill_difference = difference betw what was paid and what would have been
-# paid under basic (non-competitive) billing.
-# savings_by_supplier <- monthly_cs_welfare %>% 
-#   filter(income == "all") %>%
-#   group_by(supplier, date) %>% 
-#   summarize(aggregate_savings = -sum(bill_difference),
-#             savings_per_hh = -sum(bill_difference_pp))
-# filename = paste0("../output/savings_by_supplier_by_month_",today,".csv")
-# write_csv(savings_by_supplier, filename )
-# 
-# savings_over_year <- savings_by_supplier %>% 
-#   summarize(aggr_savings_over_year = -sum(aggregate_savings))
-# filename = paste0("../output/savings_by_supplier_whole_year_",today,".csv")
-# write_csv(savings_over_year, filename )
-
-## do aggregate savings / premiums make sense, ocrrespond to other accountings?
-## are all aggregators out of cs?
 
 
 # difference in premium, participation between town with and without aggregators ----
@@ -944,21 +892,7 @@ prem_diff_agg_no_agg_towns
 filename = paste0("../sept_2021_update/output/premium_difference_agg_no_agg_towns_",today,".csv")
 write_csv(prem_diff_agg_no_agg_towns, filename )
 
-# net loss / gain, number of customers, ave gain / loss ----
-# gain_loss <- monthly_cs_welfare %>%
-#   filter(income == "all") %>%
-#   mutate(net = ifelse(bill_difference>0,"loss","gain")) %>%
-#   group_by(net) %>%
-#   summarize(total_cs_accounts = sum(no_accts),
-#             total_bill_difference = sum(bill_difference),
-#             total_kwh = sum(kwh),
-#             average_gain_loss_per_year = 12*total_bill_difference/total_cs_accounts,
-#             average_gain_loss_per_kwh = total_bill_difference / total_kwh,
-#             wtd_avg_rate = sum(rate*kwh)/sum(kwh)) %>%
-#   select(net, total_cs_accounts, total_bill_difference, average_gain_loss_per_year, average_gain_loss_per_kwh, wtd_avg_rate)
-# gain_loss
-# filename = paste0("../sept_2021_update/output/gain_loss_by_consumers",today,".csv")
-# write_csv(gain_loss, filename )
+
 
 # appendix 2b ----
 #head(muni_small)
@@ -1240,7 +1174,7 @@ zips4 <- zips4 %>%
   select(zip, municipality, 
          all_tot_cs_accts, all_tot_basic_accts, all_tot_agg_accts, all_tot_accts, all_tot_premium_billed, all_tot_kwh_billed , 
          low_tot_cs_accts, low_tot_basic_accts, low_tot_agg_accts, low_tot_accts, low_tot_premium_billed, low_tot_kwh_billed ) %>%
-  mutate(pct_low_inc_accts = low_tot_accts / (low_tot_accts + all_tot_accts),
+  mutate(pct_low_inc_accts = low_tot_accts / all_tot_accts,
          avg_markup = ((all_tot_cs_accts * all_tot_premium_billed / all_tot_kwh_billed) + 
            (all_tot_cs_accts * all_tot_premium_billed / all_tot_kwh_billed)) / (all_tot_cs_accts + all_tot_cs_accts),
          nonlow_tot_cs_accts = all_tot_cs_accts - low_tot_cs_accts,
@@ -1266,6 +1200,32 @@ filename = paste0("../sept_2021_update/output/master_zipcode_",today,".csv")
 write_csv(zips4,filename)
 
 
+
+# make plot of participation rate versus low-income accounts ----
+plotdata=filter(zips4,low_tot_cs_accts>9,
+                municipality %in% c("Boston","Worcester","Springfield")) %>% 
+  mutate(zip = paste0("0",zip)) %>% 
+  select(pct_low_inc_accts,all_pct_cs,zip,municipality)
+filename = paste0("../sept_2021_update/output/scatter_plot_",today,".csv")
+fwrite(plotdata,file=filename)
+
+
+theme_set(theme_gray(base_size = 50))
+filename = paste0("../sept_2021_update/output/low_income_vs_participation_rate_",today,".png")
+png(filename=filename,
+    width=1.35*1250,
+    height=1*1250)
+ggplot(data=plotdata,aes(x=pct_low_inc_accts,y=all_pct_cs,label=zip,color=municipality))+
+  geom_text_repel(size=12,fontface="bold")+
+  scale_x_continuous(labels=percent)+
+  scale_y_continuous(labels=percent)+
+  scale_color_discrete(name="Municipality",
+                       labels=c("Boston","Springfield","Worcester")) +
+  labs(x="Share of low income customers",y="Participation in the competitive supply market")+
+  theme(legend.position = c(.89,.2),
+        legend.margin=margin(2,1,1,1,"line"),
+        legend.key.height=unit(4,"line"))
+dev.off()
 
 
 
